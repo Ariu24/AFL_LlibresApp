@@ -1,6 +1,10 @@
 package com.iticbcn.mywebapp.llibresApp.Controladors;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,14 +18,14 @@ import org.springframework.web.bind.support.SessionStatus;
 
 import com.iticbcn.mywebapp.llibresApp.Model.Llibre;
 import com.iticbcn.mywebapp.llibresApp.Model.Usuaris;
-import com.iticbcn.mywebapp.llibresApp.Repositoris.RepoLlibre;
+import com.iticbcn.mywebapp.llibresApp.Serveis.ProductService;
 
 @Controller
 @SessionAttributes("users")
 public class BookController {
 
     @Autowired
-    RepoLlibre repoll = new RepoLlibre();
+    ProductService repoll;
 
     @GetMapping("/")
     public String iniciar(Model model) {
@@ -33,8 +37,8 @@ public class BookController {
 
         model.addAttribute("users", users);
 
-        if (users.getUsuari().equals("toni")
-                && users.getPassword().equals("h3ll0!!")) {
+        if (users.getUsuari().equals("ariadnaLlibres")
+                && users.getPassword().equals("1234")) {
             return "index";
         } else {
             return "login";
@@ -62,7 +66,7 @@ public class BookController {
     @GetMapping("/consulta")
     public String consulta(@ModelAttribute("users") Usuaris users, Model model) {
 
-        ArrayList<Llibre> llibres = repoll.getAllLlibres();
+        Set<Llibre> llibres = repoll.findAll();
 
         model.addAttribute("llibres", llibres);
 
@@ -75,11 +79,11 @@ public class BookController {
         return "inserir";
     }
 
+
     @GetMapping("/cercaid")
     public String inputCerca(@ModelAttribute("users") Usuaris users, Model model) {
 
         Llibre llibre = new Llibre();
-        llibre.setIdLlibre(0);
         model.addAttribute("llibreErr", true);
         model.addAttribute("message", "");
         model.addAttribute("llibre", llibre);
@@ -90,45 +94,59 @@ public class BookController {
 
     @PostMapping("/inserir")
     public String inserir(@ModelAttribute("users") Usuaris users,
-            @RequestParam(name = "idLlibre") String idLlibre,
             @RequestParam(name = "titol") String titol,
             @RequestParam(name = "autor") String autor,
             @RequestParam(name = "editorial") String editorial,
             @RequestParam(name = "datapublicacio") String datapublicacio,
             @RequestParam(name = "tematica") String tematica,
+            @RequestParam(name = "isbn") String isbn,
             Model model) {
-
         String message = "";
         boolean llibreErr = false;
-
-        if (idLlibre == null || !idLlibre.matches("\\d+")) {
-            message = "La id de llibre ha de ser un nombre enter";
+        LocalDate dataPublicacio = null;
+        try {
+            dataPublicacio = LocalDate.parse(datapublicacio);
+        } catch (DateTimeParseException e) {
+            message = "La data de publicació no té el format correcte (yyyy-MM-dd)";
             llibreErr = true;
             model.addAttribute("message", message);
             model.addAttribute("llibreErr", llibreErr);
             return "inserir";
-        } else {
-            int idL = Integer.parseInt(idLlibre);
-            Llibre llibre = new Llibre(idL, titol, autor, editorial, datapublicacio, tematica);
-            repoll.InsertaLlibre(llibre);
-            ArrayList<Llibre> llibres = repoll.getAllLlibres();
-            model.addAttribute("llibres", llibres);
-            return "consulta";
         }
+        if (!repoll.validarISBN(isbn)) { 
+            llibreErr = true;
+            model.addAttribute("message", message);
+            model.addAttribute("llibreErr", llibreErr);
+            return "inserir";
+        }
+
+        Llibre llibre = new Llibre();
+        llibre.setTitol(titol);
+        llibre.setAutor(autor);
+        llibre.setEditorial(editorial);
+        llibre.setDatapublicacio(dataPublicacio);
+        llibre.setTematica(tematica);
+        llibre.setIsbn(isbn);
+        repoll.save(llibre);
+
+        Set<Llibre> llibres = repoll.findAll();
+        model.addAttribute("llibres", llibres);
+
+        return "consulta";
     }
 
     @PostMapping("/cercaid")
     public String cercaId(@ModelAttribute("users") Usuaris users,
-            @RequestParam(name = "idLlibre", required = false) String idLlibre,
+            @RequestParam(name = "id_Llibre", required = false) String id_Llibre,
             Model model) {
 
-        int idLlib = 0;
+        Long idLlib;
         String message = "";
         boolean llibreErr = false;
 
         try {
-            idLlib = Integer.parseInt(idLlibre);
-            Llibre llibre = repoll.getLlibreID(idLlib);
+            idLlib = Long.parseLong(id_Llibre);
+            Optional<Llibre> llibre = repoll.findById_Llibre(idLlib);
             if (llibre != null) {
                 model.addAttribute("llibre", llibre);
             } else {
