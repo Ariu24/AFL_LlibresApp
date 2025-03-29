@@ -102,6 +102,7 @@ public class BookController {
         return "cercaTitol";
 
     }
+
     @GetMapping("/cercaTitolEditorial")
     public String inputCercaTitolEditorial(@ModelAttribute("users") Usuaris users, Model model) {
         Llibre llibre = new Llibre();
@@ -111,7 +112,6 @@ public class BookController {
         return "cercaTitolEditorial";
 
     }
-
 
     @PostMapping("/inserir")
     public String inserir(@ModelAttribute("users") Usuaris users,
@@ -235,33 +235,34 @@ public class BookController {
         model.addAttribute("llibreErr", llibreErr);
         return "cercaTitol";
     }
+
     @PostMapping("/cercaTitolEditorial")
     public String CercaTitolEditorial(@ModelAttribute("users") Usuaris users,
-        @RequestParam(name = "titol", required = false) String titol,
-        @RequestParam(name = "editorial", required = false) String editorial,
-        Model model) {
-    String message = "";
-    boolean llibreErr = false;
-    Set<Llibre> llibres = new HashSet<Llibre>();
-    if (titol == null || titol.trim().isEmpty() || editorial == null || editorial.trim().isEmpty()) {
-        message = "Omple tots els camps";
-        llibreErr = true;
-    } else {
-        try {
-            llibres = repoll.findByTitolAndEditorial(titol, editorial);
-            if (llibres.isEmpty()) {
-                message = "No s'ha trobat cap llibre amb aquest títol i editorial";
+            @RequestParam(name = "titol", required = false) String titol,
+            @RequestParam(name = "editorial", required = false) String editorial,
+            Model model) {
+        String message = "";
+        boolean llibreErr = false;
+        Set<Llibre> llibres = new HashSet<Llibre>();
+        if (titol == null || titol.trim().isEmpty() || editorial == null || editorial.trim().isEmpty()) {
+            message = "Omple tots els camps";
+            llibreErr = true;
+        } else {
+            try {
+                llibres = repoll.findByTitolAndEditorial(titol, editorial);
+                if (llibres.isEmpty()) {
+                    message = "No s'ha trobat cap llibre amb aquest títol i editorial";
+                    llibreErr = true;
+                }
+            } catch (Exception e) {
+                message = "Error: " + e.getMessage();
                 llibreErr = true;
             }
-        } catch (Exception e) {
-            message = "Error: " + e.getMessage();
-            llibreErr = true;
         }
+        model.addAttribute("llibres", llibres);
+        model.addAttribute("message", message);
+        model.addAttribute("llibreErr", llibreErr);
+        return "cercaTitolEditorial";
     }
-    model.addAttribute("llibres", llibres);
-    model.addAttribute("message", message);
-    model.addAttribute("llibreErr", llibreErr);
-    return "cercaTitolEditorial";
-}
 
 }
