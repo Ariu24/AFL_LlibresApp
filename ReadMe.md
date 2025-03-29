@@ -1,4 +1,4 @@
-## Creació del registre del llibre:
+## Proves:
 
 ### Intent amb isbn duplicat:
 ![alt text](image.png)  
@@ -59,3 +59,8 @@ Perquè els mètodes que no hem declarat explícitament al repositori venen prop
 
 ### Per què el controlador utilitza el servei i no la seva implementació?
 Crec que es per mantenir el codi més net, més facil de mantenir i més flexible, ja que ens permet canviar l'implementacio del servei sense haver de tocar el controlador ja que d'aquesta manera s'injecta el service quan sigui necessari
+
+## Usuari
+CREATE USER 'llibreGestio'@'localhost' IDENTIFIED BY 'system1234';
+GRANT ALL PRIVILEGES ON `llibres`.* TO 'llibreGestio'@'localhost';
+![alt text](image-18.png)
