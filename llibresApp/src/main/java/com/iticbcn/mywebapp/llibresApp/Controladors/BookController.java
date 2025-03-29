@@ -120,6 +120,13 @@ public class BookController {
             model.addAttribute("llibreErr", llibreErr);
             return "inserir";
         }
+        if(titol.isEmpty()){
+            message = "El títol no pot estar en blanc";
+            llibreErr = true;
+            model.addAttribute("message", message);
+            model.addAttribute("llibreErr", llibreErr);
+            return "inserir";
+        }
         Llibre llibre = new Llibre();
         llibre.setTitol(titol);
         llibre.setAutor(autor);
@@ -169,16 +176,12 @@ public class BookController {
                 message = "La id de llibre ha de ser un nombre enter";
                 llibreErr = true;
             } catch (Exception e) {
-                // En caso de que no se encuentre el libro o cualquier otro error, mostramos el
-                // mensaje de error
                 message = e.getMessage();
                 llibreErr = true;
             }
         }
         model.addAttribute("message", message);
         model.addAttribute("llibreErr", llibreErr);
-
-        // Retornamos la vista cercaid (el usuario permanecerá en la misma pantalla)
         return "cercaid";
     }
 

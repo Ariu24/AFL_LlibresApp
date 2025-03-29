@@ -22,7 +22,7 @@ public class Llibre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id_Llibre")
     private Long idLlibre;
-    @Column(unique=true,nullable =false)
+    @Column(unique=true,nullable = false)
     private String titol;
     @Column(nullable = false)
     private String autor;

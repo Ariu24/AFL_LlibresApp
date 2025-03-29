@@ -34,25 +34,20 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public boolean validarISBN(String isbn) {
         if (isbn == null || isbn.length() != 13) {
-            return false; // ISBN debe tener exactamente 13 caracteres
+            return false;
         }
-    
-        // Verificar que las dos primeras posiciones sean letras
         String prefix = isbn.substring(0, 2);
         if (!prefix.matches("[A-Za-z]{2}")) {
             System.out.println("Las dos primeras posiciones del ISBN deben ser letras.");
             return false;
         }
-    
-        // Verificar que los caracteres restantes sean números
         for (int i = 2; i < isbn.length(); i++) {
             if (!Character.isDigit(isbn.charAt(i))) {
                 System.out.println("El ISBN debe contener solo números después de las dos primeras letras.");
                 return false;
             }
         }
-    
-        return true; // Si pasa todas las validaciones, es un ISBN válido
+        return true;
     }
     
 
