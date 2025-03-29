@@ -3,6 +3,7 @@ package com.iticbcn.mywebapp.llibresApp.Controladors;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -91,6 +92,27 @@ public class BookController {
 
     }
 
+    @GetMapping("/cercaTitol")
+    public String inputCercaTitol(@ModelAttribute("users") Usuaris users, Model model) {
+
+        Llibre llibre = new Llibre();
+        model.addAttribute("llibreErr", true);
+        model.addAttribute("message", "");
+        model.addAttribute("llibre", llibre);
+        return "cercaTitol";
+
+    }
+    @GetMapping("/cercaTitolEditorial")
+    public String inputCercaTitolEditorial(@ModelAttribute("users") Usuaris users, Model model) {
+        Llibre llibre = new Llibre();
+        model.addAttribute("llibreErr", true);
+        model.addAttribute("message", "");
+        model.addAttribute("llibre", llibre);
+        return "cercaTitolEditorial";
+
+    }
+
+
     @PostMapping("/inserir")
     public String inserir(@ModelAttribute("users") Usuaris users,
             @RequestParam(name = "titol") String titol,
@@ -120,7 +142,7 @@ public class BookController {
             model.addAttribute("llibreErr", llibreErr);
             return "inserir";
         }
-        if(titol.isEmpty()){
+        if (titol.isEmpty()) {
             message = "El títol no pot estar en blanc";
             llibreErr = true;
             model.addAttribute("message", message);
@@ -138,7 +160,7 @@ public class BookController {
         try {
             repoll.save(llibre);
         } catch (Exception e) {
-            message = "Error al guardar el llibre: " + e.getMessage();
+            message = "Error al guardar el llibre: ISBN o titol duplicat";
             llibreErr = true;
             model.addAttribute("message", message);
             model.addAttribute("llibreErr", llibreErr);
@@ -184,5 +206,66 @@ public class BookController {
         model.addAttribute("llibreErr", llibreErr);
         return "cercaid";
     }
+
+    @PostMapping("/cercaTitol")
+    public String CercaTitol(@ModelAttribute("users") Usuaris users,
+            @RequestParam(name = "titol", required = false) String titol,
+            Model model) {
+
+        String message = "";
+        boolean llibreErr = false;
+        Llibre llibre = new Llibre();
+        if (titol.isEmpty()) {
+            message = "El títol no pot estar buit.";
+            llibreErr = true;
+        } else {
+            try {
+                llibre = repoll.findByTitol(titol);
+                if (llibre == null) {
+                    message = "No s'ha trobat cap llibre amb aquest títol.";
+                    llibreErr = true;
+                }
+            } catch (Exception e) {
+                message = "Error: " + e.getMessage();
+                llibreErr = true;
+            }
+        }
+        model.addAttribute("llibre", llibre);
+        model.addAttribute("message", message);
+        model.addAttribute("llibreErr", llibreErr);
+        return "cercaTitol";
+    }
+    @PostMapping("/cercaTitolEditorial")
+    public String CercaTitolEditorial(@ModelAttribute("users") Usuaris users,
+        @RequestParam(name = "titol", required = false) String titol,
+        @RequestParam(name = "editorial", required = false) String editorial,
+        Model model) {
+    String message = "";
+    boolean llibreErr = false;
+    Set<Llibre> llibres = new HashSet<Llibre>();
+    if (titol == null || titol.trim().isEmpty() || editorial == null || editorial.trim().isEmpty()) {
+        message = "Omple tots els camps";
+        llibreErr = true;
+    } else {
+        try {
+            llibres = repoll.findByTitolAndEditorial(titol, editorial);
+            if (llibres.isEmpty()) {
+                message = "No s'ha trobat cap llibre amb aquest títol i editorial";
+                llibreErr = true;
+                return "cercaTitolEditorial";
+            }
+        } catch (Exception e) {
+            message = "Error: " + e.getMessage();
+            llibreErr = true;
+            return "index";
+        }
+    }
+    model.addAttribute("llibres", llibres);
+    model.addAttribute("message", message);
+    model.addAttribute("llibreErr", llibreErr);
+
+    System.out.println("hola2");
+    return "cercaTitolEditorial";
+}
 
 }
