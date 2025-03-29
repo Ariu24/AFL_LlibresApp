@@ -252,19 +252,15 @@ public class BookController {
             if (llibres.isEmpty()) {
                 message = "No s'ha trobat cap llibre amb aquest títol i editorial";
                 llibreErr = true;
-                return "cercaTitolEditorial";
             }
         } catch (Exception e) {
             message = "Error: " + e.getMessage();
             llibreErr = true;
-            return "index";
         }
     }
     model.addAttribute("llibres", llibres);
     model.addAttribute("message", message);
     model.addAttribute("llibreErr", llibreErr);
-
-    System.out.println("hola2");
     return "cercaTitolEditorial";
 }
 
