@@ -79,7 +79,6 @@ public class BookController {
         return "inserir";
     }
 
-
     @GetMapping("/cercaid")
     public String inputCerca(@ModelAttribute("users") Usuaris users, Model model) {
 
@@ -113,13 +112,14 @@ public class BookController {
             model.addAttribute("llibreErr", llibreErr);
             return "inserir";
         }
-        if (!repoll.validarISBN(isbn)) { 
+
+        if (!repoll.validarISBN(isbn)) {
+            message = "El ISBN no és vàlid";
             llibreErr = true;
             model.addAttribute("message", message);
             model.addAttribute("llibreErr", llibreErr);
             return "inserir";
         }
-
         Llibre llibre = new Llibre();
         llibre.setTitol(titol);
         llibre.setAutor(autor);
@@ -127,11 +127,18 @@ public class BookController {
         llibre.setDatapublicacio(dataPublicacio);
         llibre.setTematica(tematica);
         llibre.setIsbn(isbn);
-        repoll.save(llibre);
 
+        try {
+            repoll.save(llibre);
+        } catch (Exception e) {
+            message = "Error al guardar el llibre: " + e.getMessage();
+            llibreErr = true;
+            model.addAttribute("message", message);
+            model.addAttribute("llibreErr", llibreErr);
+            return "inserir";
+        }
         Set<Llibre> llibres = repoll.findAll();
         model.addAttribute("llibres", llibres);
-
         return "consulta";
     }
 
@@ -140,30 +147,39 @@ public class BookController {
             @RequestParam(name = "id_Llibre", required = false) String id_Llibre,
             Model model) {
 
-        Long idLlib;
+        Long idLlib = null;
         String message = "";
         boolean llibreErr = false;
 
-        try {
-            idLlib = Long.parseLong(id_Llibre);
-            Optional<Llibre> llibre = repoll.findById_Llibre(idLlib);
-            if (llibre != null) {
-                model.addAttribute("llibre", llibre);
-            } else {
-                message = "No hi ha cap llibre amb aquesta id";
+        if (id_Llibre == null || id_Llibre.trim().isEmpty()) {
+            message = "La id del llibre no pot estar buida.";
+            llibreErr = true;
+        } else {
+            try {
+                id_Llibre = id_Llibre.trim();
+                idLlib = Long.parseLong(id_Llibre);
+                Optional<Llibre> llibre = repoll.findById_Llibre(idLlib);
+                if (llibre.isPresent()) {
+                    model.addAttribute("llibre", llibre.get());
+                } else {
+                    throw new Exception("No hi ha cap llibre amb aquesta id");
+                }
+
+            } catch (NumberFormatException e) {
+                message = "La id de llibre ha de ser un nombre enter";
+                llibreErr = true;
+            } catch (Exception e) {
+                // En caso de que no se encuentre el libro o cualquier otro error, mostramos el
+                // mensaje de error
+                message = e.getMessage();
                 llibreErr = true;
             }
-
-        } catch (Exception e) {
-            message = "La id de llibre ha de ser un nombre enter";
-            llibreErr = true;
         }
-
         model.addAttribute("message", message);
         model.addAttribute("llibreErr", llibreErr);
 
+        // Retornamos la vista cercaid (el usuario permanecerá en la misma pantalla)
         return "cercaid";
-
     }
 
 }
